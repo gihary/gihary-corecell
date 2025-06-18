@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gihary CoreCell</title>
+</head>
+<body>
+  <h1>Gihary CoreCell Ingest</h1>
+  <form id="ingestForm">
+    <label>User ID:<br>
+      <input type="text" id="userId" required>
+    </label><br>
+    <label>Source:<br>
+      <select id="source">
+        <option value="email">Email</option>
+        <option value="whatsapp">WhatsApp</option>
+        <option value="file">File</option>
+      </select>
+    </label><br>
+    <label>Text:<br>
+      <textarea id="text" rows="5" cols="40" required></textarea>
+    </label><br>
+    <button type="submit">Send</button>
+  </form>
+  <pre id="result"></pre>
+  <script>
+    document.getElementById('ingestForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userId = document.getElementById('userId').value;
+      const source = document.getElementById('source').value;
+      const text = document.getElementById('text').value;
+
+      const res = await fetch('/gihary-ingest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, source, text })
+      });
+      const data = await res.json();
+      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    });
+  </script>
+</body>
+</html>
