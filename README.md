@@ -32,3 +32,20 @@ Il modulo `src/ranker.js` calcola un punteggio da 1 a 10, pesando **rilevanza, n
 
 La funzione `trainRankingModel` è attualmente un placeholder per un futuro addestramento dinamico dei pesi.
 
+## Parsing examples
+
+Le funzioni di parsing normalizzano i messaggi in un array di oggetti con i campi:
+`sender`, `text`, `timestamp`, `channel` e `language`.
+
+```javascript
+import { parseWhatsappMessage } from './src/parser/whatsappParser.js';
+import { parseEmail } from './src/parser/emailParser.js';
+
+const chat = '12/03/24, 15:22 - Alice: Ciao!\n12/03/24, 15:23 - Bob: Benvenuta';
+const messages = parseWhatsappMessage(chat);
+// [ { sender: 'Alice', text: 'Ciao!', channel: 'whatsapp', ... }, ... ]
+
+const mail = `From: Alice <alice@example.com>\nDate: Tue, 3 Oct 2023 10:15:00 +0200\n\nHello world`;
+const emails = parseEmail(mail);
+```
+
