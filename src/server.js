@@ -9,13 +9,14 @@ const app = express();
 app.use(express.json());
 
 app.post('/gihary-ingest', async (req, res) => {
-  const { userId, source, text } = req.body;
-  if (!userId || !source || !text) {
+  const { input, type } = req.body;
+  if (!input || !type) {
     return res.status(400).json({ error: 'Missing parameters' });
   }
 
   try {
-    const result = await ingestText(userId, source, text);
+    // Use a placeholder user id for this demo endpoint
+    const result = await ingestText('demo', type, input);
     res.json({ result });
   } catch (err) {
     res.status(500).json({ error: err.message });

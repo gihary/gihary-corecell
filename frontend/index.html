@@ -7,18 +7,15 @@
 <body>
   <h1>Gihary CoreCell Ingest</h1>
   <form id="ingestForm">
-    <label>User ID:<br>
-      <input type="text" id="userId" required>
-    </label><br>
-    <label>Source:<br>
-      <select id="source">
+    <label>Type:<br>
+      <select id="type">
         <option value="email">Email</option>
         <option value="whatsapp">WhatsApp</option>
         <option value="file">File</option>
       </select>
     </label><br>
-    <label>Text:<br>
-      <textarea id="text" rows="5" cols="40" required></textarea>
+    <label>Input:<br>
+      <textarea id="input" rows="5" cols="40" required></textarea>
     </label><br>
     <button type="submit">Send</button>
   </form>
@@ -26,14 +23,13 @@
   <script>
     document.getElementById('ingestForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const userId = document.getElementById('userId').value;
-      const source = document.getElementById('source').value;
-      const text = document.getElementById('text').value;
+      const type = document.getElementById('type').value;
+      const input = document.getElementById('input').value;
 
       const res = await fetch('/gihary-ingest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, source, text })
+        body: JSON.stringify({ input, type })
       });
       const data = await res.json();
       document.getElementById('result').textContent = JSON.stringify(data, null, 2);
