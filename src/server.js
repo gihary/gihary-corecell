@@ -4,8 +4,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { ingestText } from './ingestor.js';
 import { logEvent } from './logger.js';
+import { setupDebugger, logState, logError } from './debugger.js';
 
 dotenv.config();
+setupDebugger({ verbose: true });
 
 const app = express();
 app.use(express.json());
@@ -25,11 +27,13 @@ app.post('/gihary-ingest', async (req, res) => {
     res.json({ success: true, data });
   } catch (error) {
     logEvent('api.error', { userId, type, error: error.message });
+    logError(error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
+  logState('server.start', { port: PORT });
   console.log(`Gihary CoreCell listening on port ${PORT}`);
 });
