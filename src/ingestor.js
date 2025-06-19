@@ -8,6 +8,8 @@ import { evaluateRelevance } from './ranker.js';
 import { suggestAgentIfNeeded } from './meta.js';
 import { saveToCore } from './core.js';
 import { logEvent } from './logger.js';
+import { setupDebugger, logState, logError } from './debugger.js';
+import { rollbackMemory } from './rollback.js';
 
 /**
  * Ingest raw text from various sources and persist the analysis.
@@ -16,8 +18,10 @@ import { logEvent } from './logger.js';
  * @param {string} raw - Raw input text
  * @returns {Promise<object>} - Object containing analysis, score and suggestedAgents
  */
-export async function ingestText(userId, source, raw) {
+export async function ingestText(userId, source, raw, options = {}) {
+  const { rollbackOnError = false, rollbackTimestamp } = options;
   logEvent('ingest.start', { userId, source });
+  logState('ingest.start', { userId, source });
   let parsed;
   switch (source) {
     case 'email':
@@ -41,13 +45,28 @@ export async function ingestText(userId, source, raw) {
       throw new Error('Unknown source type');
   }
 
-  const analysis = await analyzeTextWithGemini(parsed);
-  logEvent('ingest.analyze', { userId, source });
-  const score = evaluateRelevance(analysis);
-  const suggested = suggestAgentIfNeeded(analysis);
-  const suggestedAgents = suggested ? [suggested] : [];
+  try {
+    const analysis = await analyzeTextWithGemini(parsed);
+    logEvent('ingest.analyze', { userId, source });
+    const score = evaluateRelevance(analysis);
+    const suggested = suggestAgentIfNeeded(analysis);
+    const suggestedAgents = suggested ? [suggested] : [];
 
-  await saveToCore(userId, { source, parsed, analysis, score, suggestedAgents });
-  logEvent('ingest.save', { userId, source, score, suggestedAgents });
-  return { analysis, score, suggestedAgents };
+    await saveToCore(userId, {
+      source,
+      parsed,
+      analysis,
+      score,
+      suggestedAgents,
+    });
+    logEvent('ingest.save', { userId, source, score, suggestedAgents });
+    return { analysis, score, suggestedAgents };
+  } catch (error) {
+    logEvent('ingest.error', { userId, source, error: error.message });
+    logError(error);
+    if (rollbackOnError) {
+      await rollbackMemory(userId, rollbackTimestamp);
+    }
+    throw error;
+  }
 }
