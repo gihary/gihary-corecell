@@ -1,7 +1,13 @@
 // Module to handle data rollback operations
 import { getFirestore } from 'firebase-admin/firestore';
 
-const db = getFirestore();
+let db;
+function firestore() {
+  if (!db) {
+    db = getFirestore();
+  }
+  return db;
+}
 
 /**
  * Restore previous data snapshot for a user closest to the given timestamp.
@@ -10,7 +16,7 @@ const db = getFirestore();
  * @returns {Promise<object|null>} - Restored data or null
  */
 export async function rollbackMemory(userId, timestamp) {
-  const entriesRef = db.collection('core').doc(userId).collection('entries');
+  const entriesRef = firestore().collection('core').doc(userId).collection('entries');
   const entriesSnap = await entriesRef.orderBy('timestamp').get();
   if (entriesSnap.empty) return null;
 
@@ -31,7 +37,24 @@ export async function rollbackMemory(userId, timestamp) {
 }
 
 // Placeholder for future diff/compare utilities
-export function diffEntries(oldEntry, newEntry) {
-  // TODO: Implement diff logic
-  return {};
+/**
+ * Compare two entry objects and return the changed keys with old and new values.
+ * @param {object} oldEntry - Original entry
+ * @param {object} newEntry - Updated entry
+ * @returns {object} Object where each key maps to { old, new }
+ */
+export function diffEntries(oldEntry = {}, newEntry = {}) {
+  const diff = {};
+  const keys = new Set([
+    ...Object.keys(oldEntry || {}),
+    ...Object.keys(newEntry || {}),
+  ]);
+
+  keys.forEach((key) => {
+    if (oldEntry[key] !== newEntry[key]) {
+      diff[key] = { old: oldEntry[key], new: newEntry[key] };
+    }
+  });
+
+  return diff;
 }
