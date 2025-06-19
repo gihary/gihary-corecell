@@ -2,6 +2,8 @@
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
@@ -27,4 +29,10 @@ export async function saveToCore(userId, payload) {
     data: payload,
   };
   await db.collection('core').doc(userId).collection('entries').add(entry);
+
+  // Persist a local copy in core/{userId}/entries/YYYY-MM-DD.json
+  const dir = path.join('core', userId, 'entries');
+  fs.mkdirSync(dir, { recursive: true });
+  const file = new Date().toISOString().slice(0, 10) + '.json';
+  fs.writeFileSync(path.join(dir, file), JSON.stringify(payload, null, 2));
 }
