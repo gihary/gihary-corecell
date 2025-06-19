@@ -21,10 +21,14 @@ La risposta conterrà `{ success: true, data }` in caso di successo, oppure `{ s
 
 La funzione `saveToCore` salva i dati principali su Firestore e crea **backup con timestamp** nella struttura:
 
-core/{userId}/entries
-
 
 È possibile ripristinare uno stato precedente con `rollbackMemory(userId, timestamp)`, che recupera l’entry più vicina nel tempo.
 
 Il modulo `rollback.js` include anche **hook per funzionalità future di confronto versioni** (`diff/compare`).
+
+## Ranker
+
+Il modulo `src/ranker.js` calcola un punteggio da 1 a 10, pesando **rilevanza, novità, contesto personale e applicabilità futura**.
+
+La funzione `trainRankingModel` è attualmente un placeholder per un futuro addestramento dinamico dei pesi.
 
