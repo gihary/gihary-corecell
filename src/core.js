@@ -20,4 +20,11 @@ const db = getFirestore(app);
  */
 export async function saveToCore(userId, payload) {
   await db.collection('core').doc(userId).set(payload, { merge: true });
+
+  // Also keep a timestamped backup entry for rollback
+  const entry = {
+    timestamp: new Date().toISOString(),
+    data: payload,
+  };
+  await db.collection('core').doc(userId).collection('entries').add(entry);
 }
