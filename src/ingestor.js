@@ -4,9 +4,7 @@ import { parseWhatsappMessage } from './parser/whatsappParser.js';
 import { parseTextFile } from './parser/fileParser.js';
 import { parseClipboard } from './parser/clipboardParser.js';
 import { analyzeTextWithGemini } from './geminiAnalyzer.js';
-import { evaluateRelevance } from './ranker.js';
-import { suggestAgentIfNeeded } from './meta.js';
-import { saveToCore } from './core.js';
+import { processIncoming } from './gihary-loop.js';
 import { logEvent } from './logger.js';
 import { setupDebugger, logState, logError } from './debugger.js';
 import { rollbackMemory } from './rollback.js';
@@ -48,19 +46,25 @@ export async function ingestText(userId, source, raw, options = {}) {
   try {
     const analysis = await analyzeTextWithGemini(parsed);
     logEvent('ingest.analyze', { userId, source });
-    const score = evaluateRelevance(analysis);
-    const suggested = suggestAgentIfNeeded(analysis);
-    const suggestedAgents = suggested ? [suggested] : [];
 
-    await saveToCore(userId, {
+    const loopResult = await processIncoming({
+      userId,
       source,
       parsed,
       analysis,
-      score,
-      suggestedAgents,
     });
-    logEvent('ingest.save', { userId, source, score, suggestedAgents });
-    return { analysis, score, suggestedAgents };
+    logEvent('ingest.loop', {
+      userId,
+      source,
+      score: loopResult.score,
+      suggestedAgents: loopResult.suggestedAgents,
+    });
+
+    return {
+      analysis,
+      score: loopResult.score,
+      suggestedAgents: loopResult.suggestedAgents,
+    };
   } catch (error) {
     logEvent('ingest.error', { userId, source, error: error.message });
     logError(error);
