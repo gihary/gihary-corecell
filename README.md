@@ -7,9 +7,24 @@ The `src/debugger.js` module now provides advanced logging utilities. Call
 `setupDebugger({ verbose: true })` to enable console output and use
 `logState`, `logError` and `captureVar` to record information to `debug.log`.
 
+## Ingestion Endpoint
+
+L’endpoint `POST /gihary-ingest` accetta un corpo JSON con i seguenti campi:
+
+- `input`: il testo da elaborare  
+- `type`: il tipo di sorgente (`email`, `whatsapp`, `file`, `clipboard`)  
+- `userId` *(opzionale)*: identificativo dell’utente da usare per la persistenza  
+
+La risposta conterrà `{ success: true, data }` in caso di successo, oppure `{ success: false, error }` in caso di errore.
+
 ## Persistence and Rollback
 
-`saveToCore` stores data in Firestore and now creates timestamped backups under
-`core/{userId}/entries`. Use `rollbackMemory(userId, timestamp)` to restore the
-entry closest to a given moment in time. Hooks for future diff/compare features
-are included in `rollback.js`.
+La funzione `saveToCore` salva i dati principali su Firestore e crea **backup con timestamp** nella struttura:
+
+core/{userId}/entries
+
+
+È possibile ripristinare uno stato precedente con `rollbackMemory(userId, timestamp)`, che recupera l’entry più vicina nel tempo.
+
+Il modulo `rollback.js` include anche **hook per funzionalità future di confronto versioni** (`diff/compare`).
+
