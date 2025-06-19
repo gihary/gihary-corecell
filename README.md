@@ -21,6 +21,8 @@ La risposta conterrà `{ success: true, data }` in caso di successo, oppure `{ s
 
 La funzione `saveToCore` salva i dati principali su Firestore e crea **backup con timestamp** nella struttura:
 
+Inoltre, dopo ogni scrittura viene creata/aggiornata la cartella `core/{userId}/entries` e il `payload` viene salvato in `YYYY-MM-DD.json`.
+
 
 È possibile ripristinare uno stato precedente con `rollbackMemory(userId, timestamp)`, che recupera l’entry più vicina nel tempo.
 
