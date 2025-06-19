@@ -32,7 +32,7 @@ export async function ingestText(userId, source, raw, options = {}) {
       logEvent('ingest.parse', { userId, source: 'whatsapp' });
       break;
     case 'file':
-      parsed = parseTextFile(raw);
+      parsed = await parseTextFile(raw);
       logEvent('ingest.parse', { userId, source: 'file' });
       break;
     case 'clipboard':
