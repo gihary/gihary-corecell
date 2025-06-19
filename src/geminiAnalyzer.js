@@ -71,7 +71,20 @@ export async function analyzeTextWithGemini(text) {
  * @param {string} _text
  * @returns {null}
  */
-export function analyzeForContradictions(_text) {
-  // To be implemented in the future
-  return null;
+export async function analyzeForContradictions(text) {
+  const prompt =
+    `Identify contradictions, logical inconsistencies or dubious claims in the following text. ` +
+    `Respond ONLY with JSON in the form {"contradictions": ["..."]}. ` +
+    `Return an empty array if none are found.\nText:\n${text}`;
+
+  try {
+    const raw = await callGemini(prompt);
+    const parsed = parseGeminiResponse(raw);
+    const contradictions = Array.isArray(parsed?.contradictions)
+      ? parsed.contradictions
+      : [];
+    return { success: true, contradictions };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 }
