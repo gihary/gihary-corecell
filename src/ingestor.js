@@ -21,6 +21,7 @@ export async function ingestText(userId, source, raw, options = {}) {
   logEvent('ingest.start', { userId, source });
   logState('ingest.start', { userId, source });
   let parsed;
+  let analysisText;
   switch (source) {
     case 'email':
       parsed = parseEmail(raw);
@@ -43,8 +44,12 @@ export async function ingestText(userId, source, raw, options = {}) {
       throw new Error('Unknown source type');
   }
 
+  analysisText = Array.isArray(parsed)
+    ? parsed.map(m => m.text).join('\n')
+    : parsed;
+
   try {
-    const analysis = await analyzeTextWithGemini(parsed);
+    const analysis = await analyzeTextWithGemini(analysisText);
     logEvent('ingest.analyze', { userId, source });
 
     const loopResult = await processIncoming({
