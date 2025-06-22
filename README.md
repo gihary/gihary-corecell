@@ -53,3 +53,13 @@ const mail = `From: Alice <alice@example.com>\nDate: Tue, 3 Oct 2023 10:15:00 +0
 const emails = parseEmail(mail);
 ```
 
+
+## Local development
+
+Quando esegui il server in locale con certificati self-signed potresti dover disattivare i controlli TLS:
+
+```bash
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run dev
+```
+
+Usa questa impostazione **solo** per i test in locale.
