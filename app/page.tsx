@@ -3,18 +3,21 @@
 import { useState } from 'react';
 import { fetchGiharyIngest } from '../utils/fetchGihary';
 import AgentResult from '../components/AgentResult';
+import LoginButton from '../components/LoginButton';
+import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
   const [input, setInput] = useState('');
   const [type, setType] = useState('email');
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
-      const data = await fetchGiharyIngest(input, type);
+      const data = await fetchGiharyIngest(input, type, user?.uid);
       setResult(data);
     } catch (err) {
       console.error(err);
@@ -25,6 +28,13 @@ export default function Home() {
 
   return (
     <div className="space-y-4">
+      {user ? (
+        <div className="p-2 bg-green-100 rounded text-sm">
+          {user.displayName} - {user.uid}
+        </div>
+      ) : (
+        <LoginButton />
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block mb-1 font-medium">Input</label>
