@@ -1,11 +1,9 @@
 // Core module to manage Firestore persistence
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import dotenv from 'dotenv';
+import './initEnv.js';
 import fs from 'fs';
 import path from 'path';
-
-dotenv.config();
 
 const app = initializeApp({
   credential: applicationDefault(),

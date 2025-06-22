@@ -5,7 +5,7 @@ Cellula primaria di Gihary IA – un sistema modulare e auto-evolutivo basato su
 
 The `src/debugger.js` module now provides advanced logging utilities. Call
 `setupDebugger({ verbose: true })` to enable console output and use
-`logState`, `logError` and `captureVar` to record information to `debug.log`.
+`logState` and `logError` to record information to `debug.log`.
 
 ## Ingestion Endpoint
 
@@ -53,20 +53,4 @@ const mail = `From: Alice <alice@example.com>\nDate: Tue, 3 Oct 2023 10:15:00 +0
 const emails = parseEmail(mail);
 ```
 
-## Frontend
-
-L'interfaccia utente è sviluppata con **Next.js** e si trova nella cartella `app/`.
-
-Per avviare il server di sviluppo eseguire:
-
-```bash
-npm run dev
-```
-
-Dopo la build è possibile avviare il frontend con:
-
-```bash
-npm run build
-npm run start-frontend
-```
 

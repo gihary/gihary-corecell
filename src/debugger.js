@@ -66,24 +66,6 @@ export function logError(error) {
   }
 }
 
-/**
- * Capture a variable value for later debugging.
- * @param {string} name
- * @param {any} value
- */
-export function captureVar(name, value) {
-  const entry = {
-    timestamp: new Date().toISOString(),
-    type: 'var',
-    name,
-    value,
-  };
-  memoryLogs.push(entry);
-  fs.appendFileSync(logFile, JSON.stringify(entry) + '\n');
-  if (verbose) {
-    console.log(`[VAR] ${name}=`, value);
-  }
-}
 
 /**
  * Retrieve the in-memory log list.
@@ -93,12 +75,3 @@ export function getLogs() {
   return memoryLogs;
 }
 
-/**
- * Perform basic environment checks and return status.
- * @returns {object} - Information about the running environment
- */
-export function checkEnvironment() {
-  const nodeVersion = process.version;
-  const envLoaded = fs.existsSync('.env');
-  return { nodeVersion, envLoaded };
-}

@@ -1,3 +1,5 @@
+import { jest } from '@jest/globals';
+
 afterAll(() => {
   // jest sometimes keeps open handles with firebase-admin; force exit
 });
@@ -44,5 +46,51 @@ describe('diffEntries', () => {
         a: { old: 1, new: 3 },
       },
     });
+  });
+});
+
+describe('rollbackMemory', () => {
+  let rollbackMemory;
+  let entries;
+
+  beforeEach(async () => {
+    jest.resetModules();
+    entries = [];
+    jest.unstable_mockModule('firebase-admin/firestore', () => ({
+      getFirestore: () => ({
+        collection: () => ({
+          doc: () => ({
+            collection: () => ({
+              orderBy: () => ({
+                get: async () => ({
+                  empty: entries.length === 0,
+                  forEach: (cb) => entries.forEach((e) => cb({ data: () => e })),
+                }),
+              }),
+            }),
+          }),
+        }),
+      }),
+    }));
+    ({ rollbackMemory } = await import('../src/rollback.js'));
+  });
+
+  afterEach(() => {
+    jest.resetModules();
+  });
+
+  test('restores closest backup when available', async () => {
+    entries.push(
+      { timestamp: '2023-01-01T00:00:00Z', data: { v: 1 } },
+      { timestamp: '2023-01-03T00:00:00Z', data: { v: 3 } },
+    );
+    const result = await rollbackMemory('u', '2023-01-02T18:00:00Z');
+    expect(result).toEqual({ v: 3 });
+  });
+
+  test('returns null when no backups exist', async () => {
+    entries = [];
+    const result = await rollbackMemory('u', '2023-01-02T00:00:00Z');
+    expect(result).toBeNull();
   });
 });
