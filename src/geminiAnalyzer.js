@@ -1,7 +1,5 @@
 // Module to interact with Gemini AI for text analysis
-import dotenv from 'dotenv';
-
-dotenv.config();
+import './initEnv.js';
 
 const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
