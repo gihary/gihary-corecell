@@ -62,12 +62,14 @@ export async function ingestText(userId, source, raw, options = {}) {
       userId,
       source,
       score: loopResult.score,
+      scoreBreakdown: loopResult.scoreBreakdown,
       suggestedAgents: loopResult.suggestedAgents,
     });
 
     return {
       analysis,
       score: loopResult.score,
+      scoreBreakdown: loopResult.scoreBreakdown,
       suggestedAgents: loopResult.suggestedAgents,
     };
   } catch (error) {
