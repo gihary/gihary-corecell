@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
 
@@ -13,11 +12,12 @@ const GEMINI_URL =
  * @returns {Promise<object>} - Raw JSON response
  */
 async function callGemini(prompt) {
-  if (!GEMINI_API_KEY) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
     throw new Error('GEMINI_API_KEY not configured');
   }
 
-  const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}` , {
+  const response = await fetch(`${GEMINI_URL}?key=${apiKey}` , {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -71,7 +71,14 @@ export async function analyzeTextWithGemini(text) {
  * @param {string} _text
  * @returns {null}
  */
-export async function analyzeForContradictions(text) {
+export async function analyzeForContradictions(text, options = {}) {
+  const { verbose = false } = options;
+
+  if (!process.env.GEMINI_API_KEY) {
+    if (verbose) console.log('Missing GEMINI_API_KEY');
+    return { success: false, error: 'Missing GEMINI_API_KEY' };
+  }
+
   const prompt =
     `Identify contradictions, logical inconsistencies or dubious claims in the following text. ` +
     `Respond ONLY with JSON in the form {"contradictions": ["..."]}. ` +
@@ -80,11 +87,13 @@ export async function analyzeForContradictions(text) {
   try {
     const raw = await callGemini(prompt);
     const parsed = parseGeminiResponse(raw);
-    const contradictions = Array.isArray(parsed?.contradictions)
-      ? parsed.contradictions
-      : [];
-    return { success: true, contradictions };
+    if (!Array.isArray(parsed?.contradictions)) {
+      if (verbose) console.log('Invalid response from Gemini', parsed);
+      return { success: false, error: 'Empty or invalid response from Gemini' };
+    }
+    return { success: true, contradictions: parsed.contradictions };
   } catch (error) {
+    if (verbose) console.log('Gemini API error', error);
     return { success: false, error: error.message };
   }
 }
