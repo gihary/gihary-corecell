@@ -43,18 +43,21 @@ export async function rollbackMemory(userId, timestamp) {
  * @param {object} newEntry - Updated entry
  * @returns {object} Object where each key maps to { old, new }
  */
-export function diffEntries(oldEntry = {}, newEntry = {}) {
-  const diff = {};
+export function diffEntries(oldEntry = {}, newEntry = {}, options = {}) {
+  const { fieldsToIgnore = [] } = options;
+
+  const differences = {};
   const keys = new Set([
     ...Object.keys(oldEntry || {}),
     ...Object.keys(newEntry || {}),
   ]);
 
   keys.forEach((key) => {
+    if (fieldsToIgnore.includes(key)) return;
     if (oldEntry[key] !== newEntry[key]) {
-      diff[key] = { old: oldEntry[key], new: newEntry[key] };
+      differences[key] = { old: oldEntry[key], new: newEntry[key] };
     }
   });
 
-  return diff;
+  return { differences };
 }
