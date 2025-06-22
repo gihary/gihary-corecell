@@ -57,3 +57,25 @@ test('returns contradictions array on success', async () => {
   expect(result.success).toBe(true);
   expect(result.contradictions).toEqual(['x']);
 });
+
+test('times out when Gemini request exceeds timeout', async () => {
+  process.env.GEMINI_API_KEY = 'key';
+  jest.useFakeTimers();
+  global.fetch = jest.fn().mockImplementation((_url, { signal }) => {
+    return new Promise((_resolve, reject) => {
+      signal.addEventListener('abort', () => {
+        const err = new Error('aborted');
+        err.name = 'AbortError';
+        reject(err);
+      });
+    });
+  });
+
+  ({ analyzeForContradictions } = await import('../src/geminiAnalyzer.js'));
+  const promise = analyzeForContradictions('text', { timeout: 1000 });
+  jest.advanceTimersByTime(1000);
+  const result = await promise;
+  expect(result.success).toBe(false);
+  expect(result.error).toBe('Gemini request timed out');
+  jest.useRealTimers();
+});

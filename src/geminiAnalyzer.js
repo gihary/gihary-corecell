@@ -11,31 +11,47 @@ const GEMINI_URL =
  * @param {string} prompt - Prompt sent to Gemini
  * @returns {Promise<object>} - Raw JSON response
  */
-async function callGemini(prompt) {
+async function callGemini(prompt, { timeout } = {}) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY not configured');
   }
 
-  const response = await fetch(`${GEMINI_URL}?key=${apiKey}` , {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [{ text: prompt }],
-        },
-      ],
-      generationConfig: { temperature: 0.2 },
-    }),
-  });
+  const controller = typeof timeout === 'number' ? new AbortController() : null;
+  const timer =
+    controller && timeout
+      ? setTimeout(() => controller.abort(), timeout)
+      : null;
 
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Gemini request failed: ${response.status} ${err}`);
+  try {
+    const response = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [{ text: prompt }],
+          },
+        ],
+        generationConfig: { temperature: 0.2 },
+      }),
+      signal: controller ? controller.signal : undefined,
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Gemini request failed: ${response.status} ${err}`);
+    }
+
+    return await response.json();
+  } catch (err) {
+    if (controller && err.name === 'AbortError') {
+      throw new Error('Gemini request timed out');
+    }
+    throw err;
+  } finally {
+    if (timer) clearTimeout(timer);
   }
-
-  return response.json();
 }
 
 /**
@@ -72,7 +88,7 @@ export async function analyzeTextWithGemini(text) {
  * @returns {null}
  */
 export async function analyzeForContradictions(text, options = {}) {
-  const { verbose = false } = options;
+  const { verbose = false, timeout } = options;
 
   if (!process.env.GEMINI_API_KEY) {
     if (verbose) console.log('Missing GEMINI_API_KEY');
@@ -85,7 +101,7 @@ export async function analyzeForContradictions(text, options = {}) {
     `Return an empty array if none are found.\nText:\n${text}`;
 
   try {
-    const raw = await callGemini(prompt);
+    const raw = await callGemini(prompt, { timeout });
     const parsed = parseGeminiResponse(raw);
     if (!Array.isArray(parsed?.contradictions)) {
       if (verbose) console.log('Invalid response from Gemini', parsed);
