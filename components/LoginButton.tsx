@@ -1,11 +1,11 @@
 'use client';
-import { signInWithPopup } from 'firebase/auth';
-import { auth, provider } from '../lib/firebase';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginButton() {
+  const { login } = useAuth();
   const handleLogin = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      await login();
     } catch (err) {
       console.error(err);
     }
