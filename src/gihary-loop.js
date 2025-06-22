@@ -15,7 +15,10 @@ import { logEvent } from './logger.js';
 export async function processIncoming(data) {
   const { userId, source, parsed, analysis } = data;
   const score = evaluateRelevance(analysis);
-  const suggested = suggestAgentIfNeeded(analysis);
+
+  const scoreBreakdown = { relevance: score };
+  const summary = analysis.summary || '';
+  const suggested = suggestAgentIfNeeded({ summary, scoreBreakdown });
   const suggestedAgents = suggested ? [suggested] : [];
 
   const shouldSave = score >= 5;
@@ -28,10 +31,23 @@ export async function processIncoming(data) {
   }
   if (shouldRespond) {
     logEvent('loop.respond', { userId, source, agent: suggested });
+    logEvent('agent.suggested', { agent: suggested, userId });
+    enqueueAgent(suggested, { userId, source, analysis });
   }
   if (shouldNotify) {
     logEvent('loop.notify', { userId, source, score });
   }
 
   return { score, suggestedAgents, shouldSave, shouldRespond, shouldNotify };
+}
+
+/**
+ * Placeholder for future agent queueing implementation.
+ * Currently just logs the enqueue action.
+ *
+ * @param {string} agent - Agent identifier
+ * @param {object} data - Associated data
+ */
+export function enqueueAgent(agent, data) {
+  logEvent('agent.enqueue', { agent, data });
 }

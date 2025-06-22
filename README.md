@@ -36,6 +36,18 @@ La funzione `trainRankingModel` valuta ora un singolo `entry` e restituisce un o
 con punteggio e breakdown dei quattro criteri, utilizzando pesi di default
 `0.4`, `0.3`, `0.2` e `0.1`.
 
+## Agent suggestion
+
+Il modulo `meta.js` espone la funzione `suggestAgentIfNeeded`, che ora valuta il
+punteggio di *relevance* e alcune parole chiave del riassunto per proporre
+agenti specifici:
+
+- se `relevance` è almeno `7` e nel testo compaiono termini come "appuntamento",
+  "contatto", "lead", allora restituisce `"CRMAgent"`;
+- se il riassunto contiene "sito", "pagina", "url" o "landing" suggerisce
+  `"WebAgent"`;
+- in tutti gli altri casi viene restituito `null`.
+
 ## Parsing examples
 
 Le funzioni di parsing normalizzano i messaggi in un array di oggetti con i campi:
