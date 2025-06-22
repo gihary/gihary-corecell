@@ -32,7 +32,9 @@ Il modulo `rollback.js` include anche **hook per funzionalità future di confron
 
 Il modulo `src/ranker.js` calcola un punteggio da 1 a 10, pesando **rilevanza, novità, contesto personale e applicabilità futura**.
 
-La funzione `trainRankingModel` è attualmente un placeholder per un futuro addestramento dinamico dei pesi.
+La funzione `trainRankingModel` valuta ora un singolo `entry` e restituisce un oggetto
+con punteggio e breakdown dei quattro criteri, utilizzando pesi di default
+`0.4`, `0.3`, `0.2` e `0.1`.
 
 ## Parsing examples
 
