@@ -1,12 +1,11 @@
 // Minimal Express server exposing the ingestion endpoint
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import './env.js';
 import { ingestText } from './ingestor.js';
 import { logEvent } from './logger.js';
 import { setupDebugger, logState, logError } from './debugger.js';
 
-dotenv.config();
 setupDebugger({ verbose: true });
 
 const app = express();
