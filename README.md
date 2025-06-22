@@ -54,12 +54,3 @@ const emails = parseEmail(mail);
 ```
 
 
-## Local development
-
-Quando esegui il server in locale con certificati self-signed potresti dover disattivare i controlli TLS:
-
-```bash
-NODE_TLS_REJECT_UNAUTHORIZED=0 npm run dev
-```
-
-Usa questa impostazione **solo** per i test in locale.
